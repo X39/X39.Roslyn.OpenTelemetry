@@ -1,0 +1,53 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>netstandard2.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <LangVersion>latest</LangVersion>
+
+        <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
+
+        <PackageId>X39.Roslyn.OpenTelemetry</PackageId>
+        <Authors>X39</Authors>
+        <Title>X39.Roslyn.OpenTelemetry</Title>
+        <PackageDescription>A source generator to generate ActivitySource's from attributed method bodies</PackageDescription>
+        <SupportUrl>https://github.com/X39/X39.Roslyn.OpenTelemetry/issues</SupportUrl>
+        <RepositoryType>git</RepositoryType>
+        <RepositoryUrl>https://github.com/X39/X39.Roslyn.OpenTelemetry</RepositoryUrl>
+        <PackageLicenseExpression>LGPL-3.0-only</PackageLicenseExpression>
+        <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+        <IncludeSymbols>true</IncludeSymbols>
+        <IncludeSources>true</IncludeSources>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
+        <IsTrimable>true</IsTrimable>
+        <NeutralLanguage>en-US</NeutralLanguage>
+        <DefaultLanguage>en-US</DefaultLanguage>
+        <PackageTags>utility;property;source-generators</PackageTags>
+        <AnalysisLevel>latest-recommended</AnalysisLevel>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+        <Deterministic>true</Deterministic>
+    </PropertyGroup>
+
+    <ItemGroup Condition="$(TargetFramework) == 'netstandard2.0'">
+      <PackageReference Include="System.Diagnostics.DiagnosticSource" Version="9.0.0" />
+    </ItemGroup>
+
+    <Target Name="SourceGenerator" BeforeTargets="Build">
+        <MSBuild Projects="..\X39.Roslyn.OpenTelemetry.Generator\X39.Roslyn.OpenTelemetry.Generator.csproj"
+                 BuildInParallel="false"
+                 StopOnFirstFailure="true" />
+    </Target>
+    <ItemGroup>
+        <None Include="..\..\README.md">
+            <Pack>True</Pack>
+            <PackagePath>\</PackagePath>
+        </None>
+        <None Remove="Properties\launchSettings.json"/>
+        <None Include="..\X39.Roslyn.OpenTelemetry.Generator\bin\$(Configuration)\netstandard2.0\X39.Roslyn.OpenTelemetry.Generator.dll"
+              PackagePath="analyzers\dotnet\roslyn4.0\cs"
+              Pack="true"
+              Visible="false" />
+    </ItemGroup>
+
+</Project>

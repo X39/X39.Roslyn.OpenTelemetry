@@ -1,0 +1,46 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "files", "files", "{14A582E5-E0C7-4D9F-90F0-CC347BC7A9D3}"
+	ProjectSection(SolutionItems) = preProject
+		.gitignore = .gitignore
+		.editorconfig = .editorconfig
+		README.md = README.md
+		.github\workflows\main.yml = .github\workflows\main.yml
+		LICENSE = LICENSE
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "sources", "sources", "{528DAA21-5C9A-44B0-9813-C38DF6F98C56}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{B5026E2F-EE1B-4B39-998A-0928BDF232FE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "X39.Roslyn.OpenTelemetry", "sources\X39.Roslyn.OpenTelemetry\X39.Roslyn.OpenTelemetry.csproj", "{7262574E-19B6-4A12-B62D-593236AA75C1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "X39.Roslyn.OpenTelemetry.Tests", "tests\X39.Roslyn.OpenTelemetry.Tests\X39.Roslyn.OpenTelemetry.Tests.csproj", "{FA65FBB8-720A-4449-B168-82A893A2A041}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "X39.Roslyn.OpenTelemetry.Generator", "sources\X39.Roslyn.OpenTelemetry.Generator\X39.Roslyn.OpenTelemetry.Generator.csproj", "{72F69955-B669-4BF7-AD59-47089A05FAF4}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{7262574E-19B6-4A12-B62D-593236AA75C1} = {528DAA21-5C9A-44B0-9813-C38DF6F98C56}
+		{FA65FBB8-720A-4449-B168-82A893A2A041} = {B5026E2F-EE1B-4B39-998A-0928BDF232FE}
+		{72F69955-B669-4BF7-AD59-47089A05FAF4} = {528DAA21-5C9A-44B0-9813-C38DF6F98C56}
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{7262574E-19B6-4A12-B62D-593236AA75C1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7262574E-19B6-4A12-B62D-593236AA75C1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7262574E-19B6-4A12-B62D-593236AA75C1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7262574E-19B6-4A12-B62D-593236AA75C1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FA65FBB8-720A-4449-B168-82A893A2A041}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FA65FBB8-720A-4449-B168-82A893A2A041}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FA65FBB8-720A-4449-B168-82A893A2A041}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FA65FBB8-720A-4449-B168-82A893A2A041}.Release|Any CPU.Build.0 = Release|Any CPU
+		{72F69955-B669-4BF7-AD59-47089A05FAF4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{72F69955-B669-4BF7-AD59-47089A05FAF4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{72F69955-B669-4BF7-AD59-47089A05FAF4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{72F69955-B669-4BF7-AD59-47089A05FAF4}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
