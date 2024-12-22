@@ -25,6 +25,6 @@ jobs:
     - name: Pack
       # CHANGE PACKAGE VERSION - The retarded way
       # Change the /p:VERSION=X.X.X part to change the actual package version.
-      run: dotnet pack --configuration Release /p:VERSION=1.0.0.${{ github.run_number }} --version-suffix ${{ github.sha }}
+      run: dotnet pack --configuration Release /p:VERSION=1.1.0.${{ github.run_number }} --version-suffix ${{ github.sha }}
     - name: Upload to NuGet
       run: dotnet nuget push /home/runner/work/X39.Roslyn.OpenTelemetry/X39.Roslyn.OpenTelemetry/sources/X39.Roslyn.OpenTelemetry/bin/Release/X39.Roslyn.OpenTelemetry.*.nupkg -s https://api.nuget.org/v3/index.json -k ${{ secrets.NUGET_API_KEY }} --no-symbols
