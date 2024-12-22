@@ -119,7 +119,7 @@ public class ActivitySourceGenerator : IIncrementalGenerator
                 .Replace(',', '_')
                 .Replace(" ", string.Empty);
 
-            var (activityKind, activityName, activitySourceIdentifier) = generationInfo;
+            var (activityKind, activityName, activitySourceIdentifier, isRoot) = generationInfo;
 
             var parameters = methodSymbol.Parameters
                 .Select(parameter => (type: parameter.Type.ToDisplayString(), name: parameter.Name))
@@ -140,6 +140,7 @@ public class ActivitySourceGenerator : IIncrementalGenerator
                 $"    private static ActivitySource {activitySourceIdentifier} = new(\"{StringEscape(activityName)}\");"
             );
             var hasParameters = parameters.Count > 0;
+            var hasActivityContextOrTags = hasParameters || isRoot;
             var activityContextName = default(string);
             if (parameters.Count is 0)
             {
@@ -166,12 +167,14 @@ public class ActivitySourceGenerator : IIncrementalGenerator
             builder.AppendLine(@"    {");
             builder.AppendLine($"        return {activitySourceIdentifier}.StartActivity(");
             builder.AppendLine($"            \"{StringEscape(activityName)}\",");
-            builder.AppendLine($"            ActivityKind.{activityKind}{(hasParameters ? "," : "")}");
-            if (hasParameters)
+            builder.AppendLine($"            ActivityKind.{activityKind}{(hasActivityContextOrTags ? "," : "")}");
+            if (hasActivityContextOrTags)
             {
-                var hasTags = activityContextName is not null && parameters.Count > 1 || activityContextName is null && parameters.Count > 0;
+                var hasTags = activityContextName is not null && parameters.Count > 1
+                              || activityContextName is null && parameters.Count > 0;
+
                 builder.AppendLine(
-                    $"            parentContext: {activityContextName ?? "default"}{(hasTags ? "," : "")}"
+                    $"            parentContext: {GetActivityContextValue(activityContextName, isRoot)}{(hasTags ? "," : "")}"
                 );
                 if (hasTags)
                 {
@@ -201,6 +204,16 @@ public class ActivitySourceGenerator : IIncrementalGenerator
         }
     }
 
+    private string GetActivityContextValue(string? activityContextName, bool isRoot)
+    {
+        if (activityContextName is not null)
+            return activityContextName;
+        if (isRoot)
+            return
+                "new ActivityContext(Activity.TraceIdGenerator is null ? ActivityTraceId.CreateRandom() : Activity.TraceIdGenerator(), default, default, default)";
+        return "default";
+    }
+
     private string ToEncapsulation(Accessibility accessibility)
     {
         return accessibility switch
@@ -226,7 +239,6 @@ public class ActivitySourceGenerator : IIncrementalGenerator
             if (attributeClass is null)
                 continue;
             var attributeName = attributeClass.ToDisplayString();
-
 
             #region ActivityKind
 
@@ -308,12 +320,24 @@ public class ActivitySourceGenerator : IIncrementalGenerator
 
             #endregion
 
+            #region IsRoot
 
-            return new GenerationInfo(activityKind, activityName, activitySourceIdentifier);
+            var isRoot = attributeData.NamedArguments.FirstOrDefault(kvp => kvp.Key == "IsRoot")
+                             .Value.Value as bool?
+                         ?? false;
+
+            #endregion
+
+            return new GenerationInfo(activityKind, activityName, activitySourceIdentifier, isRoot);
         }
 
         return null;
     }
 }
 
-internal record struct GenerationInfo(string ActivityKind, string ActivityName, string ActivitySourceIdentifier);
+internal record struct GenerationInfo(
+    string ActivityKind,
+    string ActivityName,
+    string ActivitySourceIdentifier,
+    bool IsRoot
+);

@@ -82,4 +82,15 @@ public class ActivityAttribute(ActivityKind activityKind) : Attribute
     /// If non-null, overrides the automatic name generation used by the generator.
     /// </summary>
     public string? Name { get; set; }
+
+    /// <summary>
+    /// Indicates whether the activity associated with this attribute is a root activity.
+    /// A root activity typically represents the starting point of a trace in a distributed
+    /// tracing context.
+    /// </summary>
+    /// <remarks>
+    /// If this is set to <see langword="true"/>, the activity will be started with a new trace id.
+    /// Do note that if any parameter is a <see cref="ActivityContext"/>, this property will be ignored.
+    /// </remarks>
+    public bool IsRoot { get; set; }
 }
