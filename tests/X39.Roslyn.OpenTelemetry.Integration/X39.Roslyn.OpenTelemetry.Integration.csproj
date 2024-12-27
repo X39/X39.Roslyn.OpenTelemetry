@@ -1,0 +1,15 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net9.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <IsPackable>false</IsPackable>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\sources\X39.Roslyn.OpenTelemetry.Generator\X39.Roslyn.OpenTelemetry.Generator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+        <ProjectReference Include="..\..\sources\X39.Roslyn.OpenTelemetry\X39.Roslyn.OpenTelemetry.csproj" />
+    </ItemGroup>
+
+</Project>

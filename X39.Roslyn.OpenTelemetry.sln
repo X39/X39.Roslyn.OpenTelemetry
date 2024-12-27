@@ -19,6 +19,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "X39.Roslyn.OpenTelemetry.Te
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "X39.Roslyn.OpenTelemetry.Generator", "sources\X39.Roslyn.OpenTelemetry.Generator\X39.Roslyn.OpenTelemetry.Generator.csproj", "{72F69955-B669-4BF7-AD59-47089A05FAF4}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "X39.Roslyn.OpenTelemetry.Integration", "tests\X39.Roslyn.OpenTelemetry.Integration\X39.Roslyn.OpenTelemetry.Integration.csproj", "{D61A4162-3F5B-41ED-AA8A-24375F35AB21}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -28,6 +30,7 @@ Global
 		{7262574E-19B6-4A12-B62D-593236AA75C1} = {528DAA21-5C9A-44B0-9813-C38DF6F98C56}
 		{FA65FBB8-720A-4449-B168-82A893A2A041} = {B5026E2F-EE1B-4B39-998A-0928BDF232FE}
 		{72F69955-B669-4BF7-AD59-47089A05FAF4} = {528DAA21-5C9A-44B0-9813-C38DF6F98C56}
+		{D61A4162-3F5B-41ED-AA8A-24375F35AB21} = {B5026E2F-EE1B-4B39-998A-0928BDF232FE}
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{7262574E-19B6-4A12-B62D-593236AA75C1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -42,5 +45,9 @@ Global
 		{72F69955-B669-4BF7-AD59-47089A05FAF4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{72F69955-B669-4BF7-AD59-47089A05FAF4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{72F69955-B669-4BF7-AD59-47089A05FAF4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D61A4162-3F5B-41ED-AA8A-24375F35AB21}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D61A4162-3F5B-41ED-AA8A-24375F35AB21}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D61A4162-3F5B-41ED-AA8A-24375F35AB21}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D61A4162-3F5B-41ED-AA8A-24375F35AB21}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
