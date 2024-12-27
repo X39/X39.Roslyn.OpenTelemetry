@@ -11,7 +11,7 @@ public class TagsPassingTests : CompilationTestBaseClass
 
                                                public partial class SingleStringTag
                                                {
-                                                   [Activity(ActivityKind.Internal)]
+                                                   [Activity(ActivityKind.Internal, CreateActivitySource = true)]
                                                    private static partial Activity? StartMyActivity(
                                                        string tag
                                                    );
@@ -28,7 +28,6 @@ public class TagsPassingTests : CompilationTestBaseClass
                                                    namespace TestNamespace;
                                                    partial class SingleStringTag
                                                    {
-                                                       [EditorBrowsable(EditorBrowsableState.Never)]
                                                        private static ActivitySource MyActivitySource = new("My");
                                                        private static partial Activity? StartMyActivity(
                                                            string tag
@@ -54,7 +53,7 @@ public class TagsPassingTests : CompilationTestBaseClass
 
                                                public partial class TripleStringTag
                                                {
-                                                   [Activity(ActivityKind.Internal)]
+                                                   [Activity(ActivityKind.Internal, CreateActivitySource = true)]
                                                    private static partial Activity? StartMyActivity(
                                                        string tag1,
                                                        string tag3,
@@ -73,7 +72,6 @@ public class TagsPassingTests : CompilationTestBaseClass
                                                    namespace TestNamespace;
                                                    partial class TripleStringTag
                                                    {
-                                                       [EditorBrowsable(EditorBrowsableState.Never)]
                                                        private static ActivitySource MyActivitySource = new("My");
                                                        private static partial Activity? StartMyActivity(
                                                            string tag1,
@@ -102,7 +100,7 @@ public class TagsPassingTests : CompilationTestBaseClass
     [InlineData("TripleStringTag", TripleStringTagCode, TripleStringTagExpected)]
     public void TestCodeIsAsExpected(string className, string code, string expected)
     {
-        var generatedFiles = Compile(code, []);
+        var generatedFiles = AssertCompilationAndGetGeneratedFiles(code, []);
         // Complex generators should be tested using text comparison.
         var (_, classOutput) = Assert.Single(
             generatedFiles,

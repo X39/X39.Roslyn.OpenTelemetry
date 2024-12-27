@@ -11,7 +11,7 @@ public class ActivityContextPassingTests : CompilationTestBaseClass
 
                                                           public partial class ActivityContextPassedAlone
                                                           {
-                                                              [Activity(ActivityKind.Internal)]
+                                                              [Activity(ActivityKind.Internal, CreateActivitySource = true)]
                                                               private static partial Activity? StartMyActivity(System.Diagnostics.ActivityContext context);
                                                           }
                                                           """;
@@ -26,7 +26,6 @@ public class ActivityContextPassingTests : CompilationTestBaseClass
                                                               namespace TestNamespace;
                                                               partial class ActivityContextPassedAlone
                                                               {
-                                                                  [EditorBrowsable(EditorBrowsableState.Never)]
                                                                   private static ActivitySource MyActivitySource = new("My");
                                                                   private static partial Activity? StartMyActivity(
                                                                       System.Diagnostics.ActivityContext context
@@ -46,7 +45,7 @@ public class ActivityContextPassingTests : CompilationTestBaseClass
     [Fact]
     public void PassingActivityContextAloneWillFillParentContext()
     {
-        var generatedFiles = Compile(ActivityContextPassedAloneCode, []);
+        var generatedFiles = AssertCompilationAndGetGeneratedFiles(ActivityContextPassedAloneCode, []);
         // Complex generators should be tested using text comparison.
         var (_, classOutput) = Assert.Single(
             generatedFiles,
@@ -63,7 +62,7 @@ public class ActivityContextPassingTests : CompilationTestBaseClass
 
                                                                        public partial class ActivityContextPassedWithStringTagRight
                                                                        {
-                                                                           [Activity(ActivityKind.Internal)]
+                                                                           [Activity(ActivityKind.Internal, CreateActivitySource = true)]
                                                                            private static partial Activity? StartMyActivity(ActivityContext context, string tag);
                                                                        }
                                                                        """;
@@ -78,7 +77,6 @@ public class ActivityContextPassingTests : CompilationTestBaseClass
                                                                            namespace TestNamespace;
                                                                            partial class ActivityContextPassedWithStringTagRight
                                                                            {
-                                                                               [EditorBrowsable(EditorBrowsableState.Never)]
                                                                                private static ActivitySource MyActivitySource = new("My");
                                                                                private static partial Activity? StartMyActivity(
                                                                                    System.Diagnostics.ActivityContext context,
@@ -102,7 +100,7 @@ public class ActivityContextPassingTests : CompilationTestBaseClass
     [Fact]
     public void PassingActivityContextWithTagOnRightSideWillFillParentContext()
     {
-        var generatedFiles = Compile(ActivityContextPassedWithStringTagRightCode, []);
+        var generatedFiles = AssertCompilationAndGetGeneratedFiles(ActivityContextPassedWithStringTagRightCode, []);
         // Complex generators should be tested using text comparison.
         var (_, classOutput) = Assert.Single(
             generatedFiles,
@@ -119,7 +117,7 @@ public class ActivityContextPassingTests : CompilationTestBaseClass
 
                                                                       public partial class ActivityContextPassedWithStringTagLeft
                                                                       {
-                                                                          [Activity(ActivityKind.Internal)]
+                                                                          [Activity(ActivityKind.Internal, CreateActivitySource = true)]
                                                                           private static partial Activity? StartMyActivity(string tag, ActivityContext context);
                                                                       }
                                                                       """;
@@ -134,7 +132,6 @@ public class ActivityContextPassingTests : CompilationTestBaseClass
                                                                           namespace TestNamespace;
                                                                           partial class ActivityContextPassedWithStringTagLeft
                                                                           {
-                                                                              [EditorBrowsable(EditorBrowsableState.Never)]
                                                                               private static ActivitySource MyActivitySource = new("My");
                                                                               private static partial Activity? StartMyActivity(
                                                                                   string tag,
@@ -158,7 +155,7 @@ public class ActivityContextPassingTests : CompilationTestBaseClass
     [Fact]
     public void PassingActivityContextWithTagOnLeftSideWillFillParentContext()
     {
-        var generatedFiles = Compile(ActivityContextPassedWithStringTagLeftCode, []);
+        var generatedFiles = AssertCompilationAndGetGeneratedFiles(ActivityContextPassedWithStringTagLeftCode, []);
         // Complex generators should be tested using text comparison.
         var (_, classOutput) = Assert.Single(
             generatedFiles,

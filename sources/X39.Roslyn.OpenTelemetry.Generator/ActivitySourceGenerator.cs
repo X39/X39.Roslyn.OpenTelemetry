@@ -17,15 +17,6 @@ namespace X39.Roslyn.OpenTelemetry.Generator;
 [Generator]
 public class ActivitySourceGenerator : IIncrementalGenerator
 {
-    private const string Namespace                 = "X39.Roslyn.OpenTelemetry.Attributes";
-    private const string ActivityAttribute         = Namespace + "." + "ActivityAttribute";
-    private const string ClientActivityAttribute   = Namespace + "." + "ClientActivityAttribute";
-    private const string ConsumerActivityAttribute = Namespace + "." + "ConsumerActivityAttribute";
-    private const string InternalActivityAttribute = Namespace + "." + "InternalActivityAttribute";
-    private const string ProducerActivityAttribute = Namespace + "." + "ProducerActivityAttribute";
-    private const string ServerActivityAttribute   = Namespace + "." + "ServerActivityAttribute";
-
-
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
         var provider = context.SyntaxProvider
@@ -68,12 +59,12 @@ public class ActivitySourceGenerator : IIncrementalGenerator
             switch (attributeName)
             {
                 // Check the full name of the [Report] attribute.
-                case ActivityAttribute:
-                case ClientActivityAttribute:
-                case ConsumerActivityAttribute:
-                case InternalActivityAttribute:
-                case ProducerActivityAttribute:
-                case ServerActivityAttribute:
+                case Constants.ActivityAttribute:
+                case Constants.ClientActivityAttribute:
+                case Constants.ConsumerActivityAttribute:
+                case Constants.InternalActivityAttribute:
+                case Constants.ProducerActivityAttribute:
+                case Constants.ServerActivityAttribute:
                     return (methodDeclarationSyntax, true);
             }
         }
@@ -96,15 +87,11 @@ public class ActivitySourceGenerator : IIncrementalGenerator
             // Symbols allow us to get the compile-time information.
             if (semanticModel.GetDeclaredSymbol(methodDeclarationSyntax) is not IMethodSymbol methodSymbol)
                 continue;
-            if (Resolve(
-                    methodSymbol,
-                    methodSymbol.GetAttributes()
-                        .Where(
-                            attribute => attribute.AttributeClass!.ContainingNamespace.ToDisplayString() == Namespace
-                        )
-                ) is not { } generationInfo)
-                continue;
             if (methodDeclarationSyntax.Parent is not ClassDeclarationSyntax classDeclarationSyntax)
+                continue;
+            if (semanticModel.GetDeclaredSymbol(classDeclarationSyntax) is not INamedTypeSymbol classSymbol)
+                continue;
+            if (GenerationInfo.Resolve(classSymbol, methodSymbol) is not { } generationInfo)
                 continue;
 
             var namespaceName = methodSymbol.ContainingNamespace.ToDisplayString();
@@ -119,7 +106,10 @@ public class ActivitySourceGenerator : IIncrementalGenerator
                 .Replace(',', '_')
                 .Replace(" ", string.Empty);
 
-            var (activityKind, activityName, activitySourceIdentifier, isRoot) = generationInfo;
+            var (activitySourceReference, activityKind, activityName, isRoot, createActivitySource) = generationInfo;
+
+            if (!ValidateActivitySourceReferenceNotEmpty(context, methodSymbol, activitySourceReference))
+                continue;
 
             var parameters = methodSymbol.Parameters
                 .Select(parameter => (type: parameter.Type.ToDisplayString(), name: parameter.Name))
@@ -135,23 +125,28 @@ public class ActivitySourceGenerator : IIncrementalGenerator
             builder.AppendLine($"namespace {namespaceName};");
             builder.AppendLine($"partial class {fullClassName}");
             builder.AppendLine("{");
-            builder.AppendLine($"    [EditorBrowsable(EditorBrowsableState.Never)]");
-            builder.AppendLine(
-                $"    private static ActivitySource {activitySourceIdentifier} = new(\"{StringEscape(activityName)}\");"
-            );
+
+
+            if (createActivitySource)
+            {
+                builder.AppendLine(
+                    $"    private static ActivitySource {Constants.CodeGen.ActivitySourcePrefix}{activityName}{Constants.CodeGen.ActivitySourceSuffix} = new(\"{StringEscape(activityName)}\");"
+                );
+            }
+
             var hasParameters = parameters.Count > 0;
             var hasActivityContextOrTags = hasParameters || isRoot;
             var activityContextName = default(string);
             if (parameters.Count is 0)
             {
                 builder.AppendLine(
-                    $"    {ToEncapsulation(methodSymbol.DeclaredAccessibility)} static partial Activity? {methodSymbol.Name}()"
+                    $"    {ToEncapsulation(methodSymbol.DeclaredAccessibility)} {(methodSymbol.IsStatic ? "static " : "")}partial Activity? {methodSymbol.Name}()"
                 );
             }
             else
             {
                 builder.AppendLine(
-                    $"    {ToEncapsulation(methodSymbol.DeclaredAccessibility)} static partial Activity? {methodSymbol.Name}("
+                    $"    {ToEncapsulation(methodSymbol.DeclaredAccessibility)} {(methodSymbol.IsStatic ? "static " : "")}partial Activity? {methodSymbol.Name}("
                 );
                 foreach (var (index, type, name) in parameters.Select((t, i) => (index: i, t.type, t.name)))
                 {
@@ -165,7 +160,7 @@ public class ActivitySourceGenerator : IIncrementalGenerator
             }
 
             builder.AppendLine(@"    {");
-            builder.AppendLine($"        return {activitySourceIdentifier}.StartActivity(");
+            builder.AppendLine($"        return {activitySourceReference}.StartActivity(");
             builder.AppendLine($"            \"{StringEscape(activityName)}\",");
             builder.AppendLine($"            ActivityKind.{activityKind}{(hasActivityContextOrTags ? "," : "")}");
             if (hasActivityContextOrTags)
@@ -204,6 +199,31 @@ public class ActivitySourceGenerator : IIncrementalGenerator
         }
     }
 
+    private bool ValidateActivitySourceReferenceNotEmpty(
+        SourceProductionContext context,
+        IMethodSymbol methodSymbol,
+        string activitySourceReference
+    )
+    {
+        if (activitySourceReference.Length > 0)
+            return true;
+
+        context.ReportDiagnostic(
+            Diagnostic.Create(
+                Diagnostics.ActivitySourceCouldNotBeResolved,
+                methodSymbol.GetAttributes()
+                    .GetActivityAttributes()
+                    .First()
+                    .ApplicationSyntaxReference
+                    ?.GetSyntax()
+                    .GetLocation(),
+                methodSymbol.Name
+            )
+        );
+
+        return false;
+    }
+
     private string GetActivityContextValue(string? activityContextName, bool isRoot)
     {
         if (activityContextName is not null)
@@ -230,114 +250,4 @@ public class ActivitySourceGenerator : IIncrementalGenerator
     }
 
     private string StringEscape(string activityName) => activityName.Replace("\"", "\\\"");
-
-    private GenerationInfo? Resolve(IMethodSymbol methodSymbol, IEnumerable<AttributeData> attributeDatas)
-    {
-        foreach (var attributeData in attributeDatas)
-        {
-            var attributeClass = attributeData.AttributeClass;
-            if (attributeClass is null)
-                continue;
-            var attributeName = attributeClass.ToDisplayString();
-
-            #region ActivityKind
-
-            string activityKind;
-
-            switch (attributeName)
-            {
-                case ActivityAttribute:
-                    activityKind = attributeData.ConstructorArguments.FirstOrDefault()
-                            .Value switch
-                        {
-                            0 => "Internal",
-                            1 => "Server",
-                            2 => "Client",
-                            3 => "Producer",
-                            4 => "Consumer",
-                            _ => string.Empty,
-                        };
-                    break;
-                case ClientActivityAttribute:
-                    activityKind = "Client";
-                    break;
-                case ConsumerActivityAttribute:
-                    activityKind = "Consumer";
-                    break;
-                case InternalActivityAttribute:
-                    activityKind = "Internal";
-                    break;
-                case ProducerActivityAttribute:
-                    activityKind = "Producer";
-                    break;
-                case ServerActivityAttribute:
-                    activityKind = "Server";
-                    break;
-                default:
-                    continue;
-            }
-
-            #endregion
-
-            #region ActivityName
-
-            var activityName = methodSymbol.Name;
-            if (activityName.StartsWith("Start"))
-            {
-                activityName = activityName.Substring("Start".Length);
-            }
-
-            if (activityName.EndsWith("Activity"))
-            {
-                activityName = activityName.Substring(0, activityName.Length - "Activity".Length);
-            }
-
-            var activityNameArg = attributeData.NamedArguments
-                .FirstOrDefault(kvp => kvp.Key == "ActivityName")
-                .Value
-                .Value
-                ?.ToString();
-
-            if (!string.IsNullOrEmpty(activityNameArg))
-            {
-                activityName = activityNameArg!;
-            }
-
-            #endregion
-
-            #region ActivitySourceIdentifier
-
-            var activitySourceIdentifierArg = attributeData.NamedArguments
-                                                  .FirstOrDefault(kvp => kvp.Key == "Identifier")
-                                                  .Value
-                                                  .Value
-                                                  ?.ToString()
-                                              ?? string.Empty;
-
-            var activitySourceIdentifier = !string.IsNullOrEmpty(activitySourceIdentifierArg)
-                ? activitySourceIdentifierArg
-                : $"{activityName}ActivitySource";
-
-            #endregion
-
-            #region IsRoot
-
-            var isRoot = attributeData.NamedArguments.FirstOrDefault(kvp => kvp.Key == "IsRoot")
-                             .Value.Value as bool?
-                         ?? false;
-
-            #endregion
-
-            return new GenerationInfo(activityKind, activityName, activitySourceIdentifier, isRoot);
-        }
-
-        return null;
-    }
 }
-
-internal record struct GenerationInfo(
-    string ActivityKind,
-    string ActivityName,
-    string ActivitySourceIdentifier,
-    bool IsRoot
-);

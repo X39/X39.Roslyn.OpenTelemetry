@@ -8,8 +8,7 @@ namespace X39.Roslyn.OpenTelemetry.Attributes;
 /// </summary>
 /// <remarks>
 /// This attribute describes the basic activity data for a method.
-/// The method this attribute is attached to must always return <see cref="Activity"/>
-/// and always must be <c>static partial</c>.
+/// The method this attribute is attached to must always return <see cref="Activity"/>.
 /// <list type="bullet">
 /// <item>
 /// <b>Explicit parent <see cref="ActivityContext"/></b><br/>
@@ -36,10 +35,10 @@ namespace X39.Roslyn.OpenTelemetry.Attributes;
 /// <code>
 /// #nullable enable
 /// // Most basic setup for activities
-/// public partial class MyClass(ITelemetryProvider telemetryProvider)
+/// public partial class MyClass(ActivitySource activitySource)
 /// {
 ///     [InternalActivity]
-///     private static partial Activity? StartMyActivity();
+///     private partial Activity? StartMyActivity();
 /// }
 /// </code>
 /// </example>
@@ -47,6 +46,7 @@ namespace X39.Roslyn.OpenTelemetry.Attributes;
 /// <code>
 /// #nullable enable
 /// // Central, static activity class with explicit Activity Context
+/// [ActivitySourceReference("Program.MyActivitySource")
 /// public static partial class AllActivities
 /// {
 ///     [ServerActivity]
@@ -60,6 +60,7 @@ namespace X39.Roslyn.OpenTelemetry.Attributes;
 /// <seealso cref="ClientActivityAttribute"/>
 /// <seealso cref="ProducerActivityAttribute"/>
 /// <seealso cref="ConsumerActivityAttribute"/>
+/// <seealso cref="ActivitySourceReferenceAttribute"/>
 [AttributeUsage(AttributeTargets.Method)]
 public class ActivityAttribute(ActivityKind activityKind) : Attribute
 {
@@ -72,11 +73,6 @@ public class ActivityAttribute(ActivityKind activityKind) : Attribute
     /// For more details, check the individual <see cref="System.Diagnostics.ActivityKind"/> values.
     /// </remarks>
     public ActivityKind ActivityKind { get; } = activityKind;
-
-    /// <summary>
-    /// If non-null, overrides the automatic identifier generation used by the generator.
-    /// </summary>
-    public string? Identifier { get; set; }
 
     /// <summary>
     /// If non-null, overrides the automatic name generation used by the generator.
@@ -93,4 +89,19 @@ public class ActivityAttribute(ActivityKind activityKind) : Attribute
     /// Do note that if any parameter is a <see cref="ActivityContext"/>, this property will be ignored.
     /// </remarks>
     public bool IsRoot { get; set; }
+
+    /// <summary>
+    /// Determines whether an <see cref="System.Diagnostics.ActivitySource"/> should be created for the annotated method.
+    /// This allows for optional customization of activity source creation in relation to the specified activity attributes.
+    /// </summary>
+    /// <remarks>
+    /// The <see cref="ActivitySource"/> generated will have the same name as the activity (see <see cref="Name"/>).
+    /// You usually do not need this as, generally speaking, you only really need one <see cref="ActivitySource"/> per
+    /// application, injecting that <see cref="ActivitySource"/> via e.g., dependency injection or referring to it via
+    /// <see langword="static"/> property.
+    /// <br/>
+    /// Do note that this will always overrule the <see cref="ActivitySourceReferenceAttribute"/> setting in all
+    /// scenarios!
+    /// </remarks>
+    public bool CreateActivitySource { get; set; }
 }

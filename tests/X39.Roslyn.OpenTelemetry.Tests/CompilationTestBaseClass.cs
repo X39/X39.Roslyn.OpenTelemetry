@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using X39.Roslyn.OpenTelemetry.Generator;
@@ -8,7 +9,31 @@ namespace X39.Roslyn.OpenTelemetry.Tests;
 
 public class CompilationTestBaseClass
 {
-    protected static (string FilePath, string Code)[] Compile(string code, string[] acceptedErrors)
+    protected static (string FilePath, string Code)[] AssertCompilationAndGetGeneratedFiles(
+        string code,
+        params string[] acceptedErrors
+    )
+    {
+        var (runResult, newCompilation) = RunCompilation(("Test.cs", code));
+
+        // Verify that the compilation has no errors.
+        var diagnostics = newCompilation.GetDiagnostics();
+        Assert.Empty(diagnostics.Where(d => d.Severity == DiagnosticSeverity.Error && !acceptedErrors.Contains(d.Id)));
+
+        // All generated files can be found in 'RunResults.GeneratedTrees'.
+        var generatedFiles = runResult.GeneratedTrees
+            .Where(t => t.FilePath.EndsWith(".g.cs"))
+            .Select(
+                (q) => (q.FilePath, Code: q.GetText()
+                    .ToString())
+            )
+            .ToArray();
+        return generatedFiles;
+    }
+
+    protected static (GeneratorDriverRunResult runResult, Compilation newCompilation) RunCompilation(
+        params IEnumerable<(string filePath, string content)> files
+    )
     {
         // Create an instance of the source generator.
         var generator = new ActivitySourceGenerator();
@@ -17,24 +42,27 @@ public class CompilationTestBaseClass
         var driver = CSharpGeneratorDriver.Create(generator);
 
         // We need to create a compilation with the required source code.
-        var assemblies = AppDomain
-            .CurrentDomain.GetAssemblies()
+        var assemblies = AppDomain.CurrentDomain
+            .GetAssemblies()
             .Where(a => !a.IsDynamic && !string.IsNullOrWhiteSpace(a.Location))
             .OrderBy((q) => q.Location)
             .ToArray();
-        var assemblyDir = Path.GetDirectoryName(assemblies.Single(q => q.Location.EndsWith("netstandard.dll")).Location)
+        var assemblyDir = Path.GetDirectoryName(
+                              assemblies.Single(q => q.Location.EndsWith("netstandard.dll"))
+                                  .Location
+                          )
                           ?? throw new InvalidOperationException(
                               "Could not find the directory of the netstandard.dll assembly."
                           );
         var selfDir = Path.GetDirectoryName(
-            assemblies.Single(q => q.Location.EndsWith("X39.Roslyn.OpenTelemetry.Tests.dll")).Location
+            assemblies.Single(q => q.Location.EndsWith("X39.Roslyn.OpenTelemetry.Tests.dll"))
+                .Location
         );
         Assert.NotNull(selfDir);
         var compilation = CSharpCompilation.Create(
             nameof(SpecializedAttributesTests),
-            [CSharpSyntaxTree.ParseText(code)],
-            assemblies
-                .Select(assembly => assembly.Location)
+            files.Select(t => CSharpSyntaxTree.ParseText(t.content, path: t.filePath)),
+            assemblies.Select(assembly => assembly.Location)
                 .Append(Path.Combine(selfDir, "X39.Roslyn.OpenTelemetry.dll"))
                 .Append(Path.Combine(assemblyDir, "System.ComponentModel.Annotations.dll"))
                 .Append(Path.Combine(assemblyDir, "System.Diagnostics.DiagnosticSource.dll"))
@@ -48,19 +76,8 @@ public class CompilationTestBaseClass
             )
         );
         // Run generators and retrieve all results.
-        var runResult = driver
-            .RunGeneratorsAndUpdateCompilation(compilation, out var newCompilation, out var _)
+        var runResult = driver.RunGeneratorsAndUpdateCompilation(compilation, out var newCompilation, out var _)
             .GetRunResult();
-
-        // Verify that the compilation has no errors.
-        var diagnostics = newCompilation.GetDiagnostics();
-        Assert.Empty(diagnostics.Where(d => d.Severity == DiagnosticSeverity.Error && !acceptedErrors.Contains(d.Id)));
-
-        // All generated files can be found in 'RunResults.GeneratedTrees'.
-        var generatedFiles = runResult
-            .GeneratedTrees.Where(t => t.FilePath.EndsWith(".g.cs"))
-            .Select((q) => (q.FilePath, Code: q.GetText().ToString()))
-            .ToArray();
-        return generatedFiles;
+        return (runResult, newCompilation);
     }
 }

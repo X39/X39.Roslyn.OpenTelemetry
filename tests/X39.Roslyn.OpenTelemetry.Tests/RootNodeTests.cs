@@ -11,7 +11,7 @@ public class ActivityRootNodeTests : CompilationTestBaseClass
 
                                                  public partial class IsRootIsSetToTrue
                                                  {
-                                                     [Activity(ActivityKind.Internal, IsRoot = true)]
+                                                     [Activity(ActivityKind.Internal, IsRoot = true, CreateActivitySource = true)]
                                                      private static partial Activity? StartMyActivity();
                                                  }
                                                  """;
@@ -26,7 +26,6 @@ public class ActivityRootNodeTests : CompilationTestBaseClass
                                                      namespace TestNamespace;
                                                      partial class IsRootIsSetToTrue
                                                      {
-                                                         [EditorBrowsable(EditorBrowsableState.Never)]
                                                          private static ActivitySource MyActivitySource = new("My");
                                                          private static partial Activity? StartMyActivity()
                                                          {
@@ -44,7 +43,7 @@ public class ActivityRootNodeTests : CompilationTestBaseClass
     [Fact]
     public void IsRootingWorkingIfExplicitlySetToTrue()
     {
-        var generatedFiles = Compile(IsRootIsSetToTrueCode, []);
+        var generatedFiles = AssertCompilationAndGetGeneratedFiles(IsRootIsSetToTrueCode, []);
         // Complex generators should be tested using text comparison.
         var (_, classOutput) = Assert.Single(
             generatedFiles,
@@ -60,7 +59,7 @@ public class ActivityRootNodeTests : CompilationTestBaseClass
 
                                                   public partial class IsRootIsSetToFalse
                                                   {
-                                                      [Activity(ActivityKind.Internal, IsRoot = false)]
+                                                      [Activity(ActivityKind.Internal, IsRoot = false, CreateActivitySource = true)]
                                                       private static partial Activity? StartMyActivity();
                                                   }
                                                   """;
@@ -75,7 +74,6 @@ public class ActivityRootNodeTests : CompilationTestBaseClass
                                                       namespace TestNamespace;
                                                       partial class IsRootIsSetToFalse
                                                       {
-                                                          [EditorBrowsable(EditorBrowsableState.Never)]
                                                           private static ActivitySource MyActivitySource = new("My");
                                                           private static partial Activity? StartMyActivity()
                                                           {
@@ -92,7 +90,7 @@ public class ActivityRootNodeTests : CompilationTestBaseClass
     [Fact]
     public void IsRootingWorkingIfExplicitlySetToFalse()
     {
-        var generatedFiles = Compile(IsRootIsSetToFalseCode, []);
+        var generatedFiles = AssertCompilationAndGetGeneratedFiles(IsRootIsSetToFalseCode, []);
         // Complex generators should be tested using text comparison.
         var (_, classOutput) = Assert.Single(
             generatedFiles,
@@ -108,7 +106,7 @@ public class ActivityRootNodeTests : CompilationTestBaseClass
 
                                                                            public partial class IsRootIsSetToTrueAndActivityContextIsPassed
                                                                            {
-                                                                               [Activity(ActivityKind.Internal, IsRoot = true)]
+                                                                               [Activity(ActivityKind.Internal, IsRoot = true, CreateActivitySource = true)]
                                                                                private static partial Activity? StartMyActivity(ActivityContext context);
                                                                            }
                                                                            """;
@@ -123,7 +121,6 @@ public class ActivityRootNodeTests : CompilationTestBaseClass
                                                                                namespace TestNamespace;
                                                                                partial class IsRootIsSetToTrueAndActivityContextIsPassed
                                                                                {
-                                                                                   [EditorBrowsable(EditorBrowsableState.Never)]
                                                                                    private static ActivitySource MyActivitySource = new("My");
                                                                                    private static partial Activity? StartMyActivity(
                                                                                        System.Diagnostics.ActivityContext context
@@ -143,7 +140,7 @@ public class ActivityRootNodeTests : CompilationTestBaseClass
     [Fact]
     public void IsRootingNotUsedIfExplicitlySetToTrueAndActivityContextIsParameter()
     {
-        var generatedFiles = Compile(IsRootIsSetToTrueAndActivityContextIsPassedCode, []);
+        var generatedFiles = AssertCompilationAndGetGeneratedFiles(IsRootIsSetToTrueAndActivityContextIsPassedCode, []);
         // Complex generators should be tested using text comparison.
         var (_, classOutput) = Assert.Single(
             generatedFiles,

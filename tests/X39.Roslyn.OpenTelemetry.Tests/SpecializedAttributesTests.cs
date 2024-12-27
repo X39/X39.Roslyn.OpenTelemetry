@@ -12,7 +12,7 @@ public class SpecializedAttributesTests : CompilationTestBaseClass
 
                                            public partial class {0}ActivityTest
                                            {{
-                                               [{0}Activity]
+                                               [{0}Activity(CreateActivitySource = true)]
                                                private static partial Activity? StartMyActivity();
                                            }}
                                            """;
@@ -27,7 +27,6 @@ public class SpecializedAttributesTests : CompilationTestBaseClass
                                                namespace TestNamespace;
                                                partial class {0}ActivityTest
                                                {{
-                                                   [EditorBrowsable(EditorBrowsableState.Never)]
                                                    private static ActivitySource MyActivitySource = new("My");
                                                    private static partial Activity? StartMyActivity()
                                                    {{
@@ -51,7 +50,7 @@ public class SpecializedAttributesTests : CompilationTestBaseClass
     // @formatter:max_line_length restore
     public void ActivityKindGetsRecognized(string activityKind)
     {
-        var generatedFiles = Compile(ArgActivityCode.Format(activityKind), []);
+        var generatedFiles = AssertCompilationAndGetGeneratedFiles(ArgActivityCode.Format(activityKind), []);
 
         // Complex generators should be tested using text comparison.
         var (_, classOutput) = Assert.Single(

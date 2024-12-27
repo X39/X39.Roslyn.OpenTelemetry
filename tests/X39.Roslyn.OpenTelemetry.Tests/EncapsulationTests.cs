@@ -12,7 +12,7 @@ public class EncapsulationTests : CompilationTestBaseClass
 
                                            public partial class {1}ActivityTest
                                            {{
-                                               [Activity(ActivityKind.Internal)]
+                                               [Activity(ActivityKind.Internal, CreateActivitySource = true)]
                                                {0} static partial Activity? StartMyActivity();
                                            }}
                                            """;
@@ -27,7 +27,6 @@ public class EncapsulationTests : CompilationTestBaseClass
                                                namespace TestNamespace;
                                                partial class {1}ActivityTest
                                                {{
-                                                   [EditorBrowsable(EditorBrowsableState.Never)]
                                                    private static ActivitySource MyActivitySource = new("My");
                                                    {0} static partial Activity? StartMyActivity()
                                                    {{
@@ -51,7 +50,7 @@ public class EncapsulationTests : CompilationTestBaseClass
     // @formatter:max_line_length restore
     public void AllEncapsulationsWork(string encapsulation, string? classPrefix = null)
     {
-        var generatedFiles = Compile(ArgActivityCode.Format(encapsulation, classPrefix ?? encapsulation), []);
+        var generatedFiles = AssertCompilationAndGetGeneratedFiles(ArgActivityCode.Format(encapsulation, classPrefix ?? encapsulation), []);
 
         // Complex generators should be tested using text comparison.
         var (_, classOutput) = Assert.Single(
