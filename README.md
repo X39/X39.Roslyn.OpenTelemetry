@@ -13,7 +13,7 @@
   * [`ActivitySource` detection rules](#activitysource-detection-rules)
     * [Auto-Detection of ActivitySource fields](#auto-detection-of-activitysource-fields)
       * [Example](#example)
-    * [`ActivitySourceReference` on class or method layer](#activitysourcereference-on-class-or-method-layer)
+    * [`ActivitySourceReference` on assembly, class or method level](#activitysourcereference-on-assembly-class-or-method-level)
       * [Example](#example-1)
     * [`ActivityAttribtue.CreateActivitySource` being true](#activityattribtuecreateactivitysource-being-true)
       * [Example](#example-2)
@@ -160,14 +160,15 @@ public partial class MyClass
 }
 ```
 
-### `ActivitySourceReference` on class or method layer
+### `ActivitySourceReference` on assembly, class or method level
 
-If an `ActivitySourceReference` is provided, the source generator will insert the snippet inside the string
-to get the `ActivitySource`. The closer the attribute is to the method, the higher the priority of it will be
-(aka: method > class).
+When an `ActivitySourceReference` attribute is specified,
+the source generator uses the provided code snippet from the string to obtain the`ActivitySource`.
+The priority is determined by the proximity to the method (method > class > assembly).
 
-Do note that there is no validation done as this is user-land (aka: your) code.
-You may do whatever you need to do to get that `ActivitySource`, as long as it fits into a single expression.
+Please note that no validation is performed as this code is considered user-defined.
+You can include whatever logic is required to retrieve the `ActivitySource`,
+as long as it fits within a single expression.
 
 #### Example
 
@@ -247,6 +248,7 @@ a corresponding parameter. The source generator will take your `ActivityLink` an
 place too.
 
 # About
+
 ## Building
 
 This project uses GitHub Actions for continuous integration.

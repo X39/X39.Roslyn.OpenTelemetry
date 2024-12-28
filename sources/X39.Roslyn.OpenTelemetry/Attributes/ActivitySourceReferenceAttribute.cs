@@ -36,5 +36,5 @@
 /// <seealso cref="ProducerActivityAttribute"/>
 /// <seealso cref="ConsumerActivityAttribute"/>
 /// <seealso cref="ActivitySourceReferenceAttribute"/>
-[AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
+[AttributeUsage(AttributeTargets.Class | AttributeTargets.Method | AttributeTargets.Assembly)]
 public sealed class ActivitySourceReferenceAttribute(string path) : Attribute;

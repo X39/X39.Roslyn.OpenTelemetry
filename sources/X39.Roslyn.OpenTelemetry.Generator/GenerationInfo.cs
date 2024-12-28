@@ -59,6 +59,7 @@ internal record struct GenerationInfo(
         {
             activitySourceReference = ResolveActivitySourceOnMember(classSymbol, methodSymbol);
         }
+
         return generationInfo.Value with
         {
             ActivitySourceReference = string.IsNullOrWhiteSpace(generationInfo.Value.ActivitySourceReference)
@@ -77,14 +78,17 @@ internal record struct GenerationInfo(
             .Where(field => field.CanBeReferencedByName);
         foreach (var fieldSymbol in fields)
         {
-            if ((!methodIsStatic || fieldSymbol.IsStatic) && fieldSymbol.Type.ToDisplayString() == "System.Diagnostics.ActivitySource")
+            if ((!methodIsStatic || fieldSymbol.IsStatic)
+                && fieldSymbol.Type.ToDisplayString() == "System.Diagnostics.ActivitySource")
                 return fieldSymbol.Name;
         }
+
         var properties = classSymbol.GetMembers()
             .OfType<IPropertySymbol>();
         foreach (var propertySymbol in properties)
         {
-            if ((!methodIsStatic || propertySymbol.IsStatic) && propertySymbol.Type.ToDisplayString() == "System.Diagnostics.ActivitySource")
+            if ((!methodIsStatic || propertySymbol.IsStatic)
+                && propertySymbol.Type.ToDisplayString() == "System.Diagnostics.ActivitySource")
                 return propertySymbol.Name;
         }
 
@@ -98,9 +102,24 @@ internal record struct GenerationInfo(
                 attribute => attribute.AttributeClass!.ContainingNamespace.ToDisplayString() == Constants.Namespace
                              && attribute.AttributeClass.ToDisplayString() == Constants.ActivitySourceReferenceAttribute
             );
-        return activitySourceReferenceAttribute?.ConstructorArguments.FirstOrDefault()
-                   .Value as string
-               ?? string.Empty;
+        var activitySourceReference = activitySourceReferenceAttribute?.ConstructorArguments.FirstOrDefault()
+                                          .Value as string
+                                      ?? string.Empty;
+        if (string.IsNullOrWhiteSpace(activitySourceReference))
+        {
+            var activitySourceReferenceAssemblyAttribute = classSymbol.ContainingAssembly
+                .GetAttributes()
+                .FirstOrDefault(
+                    attribute => attribute.AttributeClass!.ContainingNamespace.ToDisplayString() == Constants.Namespace
+                                 && attribute.AttributeClass.ToDisplayString()
+                                 == Constants.ActivitySourceReferenceAttribute
+                );
+            activitySourceReference = activitySourceReferenceAssemblyAttribute?.ConstructorArguments.FirstOrDefault()
+                                          .Value as string
+                                      ?? string.Empty;
+        }
+
+        return activitySourceReference;
     }
 
 
@@ -194,7 +213,11 @@ internal record struct GenerationInfo(
 
         return new GenerationInfo(
             ActivitySourceReference: createActivitySource
-                ? string.Concat(Constants.CodeGen.ActivitySourcePrefix, activityName, Constants.CodeGen.ActivitySourceSuffix)
+                ? string.Concat(
+                    Constants.CodeGen.ActivitySourcePrefix,
+                    activityName,
+                    Constants.CodeGen.ActivitySourceSuffix
+                )
                 : generationInfo?.ActivitySourceReference ?? string.Empty,
             ActivityKind: activityKind,
             ActivityName: activityName,
