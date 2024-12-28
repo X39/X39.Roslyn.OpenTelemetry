@@ -15,7 +15,7 @@
       * [Example](#example)
     * [`ActivitySourceReference` on assembly, class or method level](#activitysourcereference-on-assembly-class-or-method-level)
       * [Example](#example-1)
-    * [`ActivityAttribtue.CreateActivitySource` being true](#activityattribtuecreateactivitysource-being-true)
+    * [`ActivityAttribute.CreateActivitySource` being true](#activityattributecreateactivitysource-being-true)
       * [Example](#example-2)
   * [Custom `ActivityContext`](#custom-activitycontext)
   * [Activity name detection rules](#activity-name-detection-rules)
@@ -130,6 +130,24 @@ set the (C#) code path to the `ActivitySource`. The closer attribute will win in
 
 It is mandatory in all cases where the `ActivitySource` is not available as either property or field.
 
+#### Example
+
+```csharp
+// You only have to supply one of the following ActivitySourceReferenceAttribute's
+// But for completeness reasons, all have been provided in this very example.
+[assembly: ActivitySourceReference("Assembly.Namespace.Statics.LowestPrioritySource")]
+
+[ActivitySourceReference("Assembly.Namespace.Statics.MediumPrioritySource")]
+public partial class MyClass
+{
+    
+    [InternalActivity]
+    [ActivitySourceReference("Assembly.Namespace.Statics.HighestPrioritySource")]
+    public partial Activity? StartMyActivity();
+}
+
+```
+
 # How things work
 
 ## `ActivitySource` detection rules
@@ -138,7 +156,6 @@ The source generator has three ways to define the `ActivitySource` to be used wi
 
 ### Auto-Detection of ActivitySource fields
 
-<!-- ToDo: Add diagnostic to handle multiple ActivitySources being found -->
 Albeit being listed first, this has the lowest priority. The source generator will attempt to find
 any property or field with the type `ActivitySource` in a `class` and use the first one it finds.
 
@@ -181,7 +198,7 @@ public partial class MyClass
 }
 ```
 
-### `ActivityAttribtue.CreateActivitySource` being true
+### `ActivityAttribute.CreateActivitySource` being true
 
 If you instruct the source generator to create an `ActivitySource` for a method, that one always will
 take precedence over any other rules.
