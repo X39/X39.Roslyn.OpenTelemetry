@@ -1,11 +1,11 @@
-using System;
-using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
+using X39.Roslyn.OpenTelemetry.Generator.ExtensionMethods;
+using X39.Roslyn.OpenTelemetry.Generator.Statics;
 
 
 namespace X39.Roslyn.OpenTelemetry.Generator;
@@ -15,7 +15,7 @@ namespace X39.Roslyn.OpenTelemetry.Generator;
 /// When using the source code as a baseline, an incremental source generator is preferable because it reduces the performance overhead.
 /// </summary>
 [Generator]
-public class ActivitySourceGenerator : IIncrementalGenerator
+public class IncrementalSourceGenerator : IIncrementalGenerator
 {
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
@@ -130,7 +130,7 @@ public class ActivitySourceGenerator : IIncrementalGenerator
             if (createActivitySource)
             {
                 builder.AppendLine(
-                    $"    private static ActivitySource {Constants.CodeGen.ActivitySourcePrefix}{activityName}{Constants.CodeGen.ActivitySourceSuffix} = new(\"{StringEscape(activityName)}\");"
+                    $"    private static ActivitySource {Constants.CodeGen.ActivitySourcePrefix}{activityName}{Constants.CodeGen.ActivitySourceSuffix} = new(\"{activityName.ToCSharpString()}\");"
                 );
             }
 
@@ -140,13 +140,13 @@ public class ActivitySourceGenerator : IIncrementalGenerator
             if (parameters.Count is 0)
             {
                 builder.AppendLine(
-                    $"    {ToEncapsulation(methodSymbol.DeclaredAccessibility)} {(methodSymbol.IsStatic ? "static " : "")}partial Activity? {methodSymbol.Name}()"
+                    $"    {methodSymbol.DeclaredAccessibility.ToCSharpString()} {(methodSymbol.IsStatic ? "static " : "")}partial Activity? {methodSymbol.Name}()"
                 );
             }
             else
             {
                 builder.AppendLine(
-                    $"    {ToEncapsulation(methodSymbol.DeclaredAccessibility)} {(methodSymbol.IsStatic ? "static " : "")}partial Activity? {methodSymbol.Name}("
+                    $"    {methodSymbol.DeclaredAccessibility.ToCSharpString()} {(methodSymbol.IsStatic ? "static " : "")}partial Activity? {methodSymbol.Name}("
                 );
                 foreach (var (index, type, name) in parameters.Select((t, i) => (index: i, t.type, t.name)))
                 {
@@ -161,7 +161,7 @@ public class ActivitySourceGenerator : IIncrementalGenerator
 
             builder.AppendLine(@"    {");
             builder.AppendLine($"        return {activitySourceReference}.StartActivity(");
-            builder.AppendLine($"            \"{StringEscape(activityName)}\",");
+            builder.AppendLine($"            \"{activityName.ToCSharpString()}\",");
             builder.AppendLine($"            ActivityKind.{activityKind}{(hasActivityContextOrTags ? "," : "")}");
             if (hasActivityContextOrTags)
             {
@@ -179,7 +179,7 @@ public class ActivitySourceGenerator : IIncrementalGenerator
                         if (type == "System.Diagnostics.ActivityContext")
                             continue;
                         builder.AppendLine(
-                            $"                new KeyValuePair<string, object?>(\"{StringEscape(name)}\", {name}),"
+                            $"                new KeyValuePair<string, object?>(\"{name.ToCSharpString()}\", {name}),"
                         );
                     }
 
@@ -234,20 +234,4 @@ public class ActivitySourceGenerator : IIncrementalGenerator
         return "default";
     }
 
-    private string ToEncapsulation(Accessibility accessibility)
-    {
-        return accessibility switch
-        {
-            Accessibility.NotApplicable => "",
-            Accessibility.Private => "private",
-            Accessibility.ProtectedOrInternal => "protected internal",
-            Accessibility.ProtectedAndInternal => "protected internal",
-            Accessibility.Protected => "protected",
-            Accessibility.Internal => "internal",
-            Accessibility.Public => "public",
-            _ => throw new ArgumentOutOfRangeException(nameof(accessibility), accessibility, null),
-        };
-    }
-
-    private string StringEscape(string activityName) => activityName.Replace("\"", "\\\"");
 }

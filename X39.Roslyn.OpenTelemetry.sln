@@ -7,6 +7,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "files", "files", "{14A582E5
 		README.md = README.md
 		.github\workflows\main.yml = .github\workflows\main.yml
 		LICENSE = LICENSE
+		.gitattributes = .gitattributes
+		CONTRIBUTORS.md = CONTRIBUTORS.md
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "sources", "sources", "{528DAA21-5C9A-44B0-9813-C38DF6F98C56}"

@@ -9,19 +9,21 @@
       * [`IsRoot` Property](#isroot-property)
       * [`CreateActivitySource` Property](#createactivitysource-property)
     * [`ActivitySourceReferenceAttribute`](#activitysourcereferenceattribute)
+      * [Example](#example)
 * [How things work](#how-things-work)
   * [`ActivitySource` detection rules](#activitysource-detection-rules)
     * [Auto-Detection of ActivitySource fields](#auto-detection-of-activitysource-fields)
-      * [Example](#example)
-    * [`ActivitySourceReference` on assembly, class or method level](#activitysourcereference-on-assembly-class-or-method-level)
       * [Example](#example-1)
-    * [`ActivityAttribute.CreateActivitySource` being true](#activityattributecreateactivitysource-being-true)
+    * [`ActivitySourceReference` on assembly, class or method level](#activitysourcereference-on-assembly-class-or-method-level)
       * [Example](#example-2)
+    * [`ActivityAttribute.CreateActivitySource` being true](#activityattributecreateactivitysource-being-true)
+      * [Example](#example-3)
   * [Custom `ActivityContext`](#custom-activitycontext)
   * [Activity name detection rules](#activity-name-detection-rules)
   * [The method prototype](#the-method-prototype)
   * [Adding tags to an `Activity`](#adding-tags-to-an-activity)
   * [Passing in `ActivityLink`s to other activities](#passing-in-activitylinks-to-other-activities)
+* [Diagnostics](#diagnostics)
 * [About](#about)
   * [Building](#building)
   * [Testing](#testing)
@@ -30,8 +32,6 @@
     * [Contributors Agreement](#contributors-agreement)
   * [License](#license)
 <!-- TOC -->
-
-<!-- This is heavily AI written as i was too lazy to be bothered with explaining everything .. ToDo: create better readme -->
 
 # X39.Roslyn.OpenTelemetry
 
@@ -219,7 +219,6 @@ You may want to pass in a specific activity context into an activity.
 To do that, you may simply add a single `ActivitySource` parameter to your method (position does not matter).
 Note that the default `ActivityContext` will always keep the activity chain.
 
-<!-- ToDo: Add diagnostic to check no IsRoot and ActivityContext parameter -->
 This parameter is incompatible with the [`IsRoot` Property](#isroot-property).
 If both are provided, the `IsRoot` variant always will take precedence.
 
@@ -263,6 +262,14 @@ The source generator will pick that parameter up and puts it into the correspond
 To add an `ActivityLink` to an activity, you just have, and probably already guessed by now, to add
 a corresponding parameter. The source generator will take your `ActivityLink` and throw it at the correct
 place too.
+
+# Diagnostics
+
+The source generator comes with the following diagnostics:
+
+| Id          | Reason                                        |
+|-------------|-----------------------------------------------|
+| X39OTEL0001 | Failed to resolve `ActivitySource` for method |
 
 # About
 

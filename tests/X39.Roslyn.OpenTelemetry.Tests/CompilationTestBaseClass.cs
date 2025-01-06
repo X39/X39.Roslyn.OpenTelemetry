@@ -36,7 +36,7 @@ public class CompilationTestBaseClass
     )
     {
         // Create an instance of the source generator.
-        var generator = new ActivitySourceGenerator();
+        var generator = new IncrementalSourceGenerator();
 
         // Source generators should be tested using 'GeneratorDriver'.
         var driver = CSharpGeneratorDriver.Create(generator);

@@ -1,6 +1,6 @@
-﻿namespace X39.Roslyn.OpenTelemetry.Generator;
+﻿namespace X39.Roslyn.OpenTelemetry.Generator.Statics;
 
-internal class Constants
+internal static class Constants
 {
     internal const string Namespace                        = "X39.Roslyn.OpenTelemetry.Attributes";
     internal const string ActivityAttribute                = Namespace + "." + "ActivityAttribute";

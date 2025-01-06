@@ -1,10 +1,11 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis;
+using X39.Roslyn.OpenTelemetry.Generator.Statics;
 
-namespace X39.Roslyn.OpenTelemetry.Generator;
+namespace X39.Roslyn.OpenTelemetry.Generator.ExtensionMethods;
 
-public static class Filters
+public static class AttributeDataEnumerableExt
 {
     public static IEnumerable<AttributeData> GetGeneratorAttributes(this IEnumerable<AttributeData> attributes)
         => attributes.Where(attribute => attribute.AttributeClass!.ContainingNamespace.ToDisplayString()== Constants.Namespace

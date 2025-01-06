@@ -1,5 +1,6 @@
 ﻿using System.Linq;
 using Microsoft.CodeAnalysis;
+using X39.Roslyn.OpenTelemetry.Generator.Statics;
 
 namespace X39.Roslyn.OpenTelemetry.Generator;
 
